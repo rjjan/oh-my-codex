@@ -35,6 +35,7 @@ import { createUltragoalPlan, readUltragoalPlan } from "../../ultragoal/artifact
 import { getBaseStateDir } from "../../state/paths.js";
 import { maybeNudgeLeaderForAllowedWorkerStop } from "../notify-hook/team-worker-stop.js";
 import { MAX_NATIVE_STDIN_JSON_BYTES } from "../hook-payload-guard.js";
+import { PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK } from "../planning-artifact-write-policy.js";
 
 function nativeHookScriptPath(): string {
   return join(process.cwd(), "dist", "scripts", "codex-native-hook.js");
@@ -5860,6 +5861,21 @@ exit 0
       );
       assert.equal(allowedWrite.outputJson, null);
 
+      const allowedPatch = await dispatchCodexNativeHook(
+        {
+          hook_event_name: "PreToolUse",
+          cwd,
+          session_id: "sess-di-artifact",
+          tool_name: "apply_patch",
+          tool_use_id: "tool-di-spec-patch",
+          tool_input: {
+            patch: "*** Begin Patch\n*** Add File: .omx/specs/deep-interview-patch.md\n+# Spec\n*** End Patch\n",
+          },
+        },
+        { cwd },
+      );
+      assert.equal(allowedPatch.outputJson, null);
+
       const allowedBash = await dispatchCodexNativeHook(
         {
           hook_event_name: "PreToolUse",
@@ -5867,11 +5883,25 @@ exit 0
           session_id: "sess-di-artifact",
           tool_name: "Bash",
           tool_use_id: "tool-di-context-bash",
-          tool_input: { command: "cat > .omx/context/demo.md <<'EOF'\n# Context\nEOF" },
+          tool_input: { command: "printf '%s\\n' '# Context' > .omx/context/demo.md" },
         },
         { cwd },
       );
       assert.equal(allowedBash.outputJson, null);
+
+      const blockedArtifactHeredoc = await dispatchCodexNativeHook(
+        {
+          hook_event_name: "PreToolUse",
+          cwd,
+          session_id: "sess-di-artifact",
+          tool_name: "Bash",
+          tool_use_id: "tool-di-spec-heredoc",
+          tool_input: { command: "cat <<'EOF' > .omx/specs/deep-interview-demo.md\n# Spec\nEOF" },
+        },
+        { cwd },
+      );
+      assert.equal((blockedArtifactHeredoc.outputJson as { decision?: string } | null)?.decision, "block");
+      assert.match(JSON.stringify(blockedArtifactHeredoc.outputJson), new RegExp(PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK));
 
       const allowedAppendBash = await dispatchCodexNativeHook(
         {
@@ -14415,7 +14445,7 @@ exit 0
 
       assert.equal(result.omxEventName, "pre-tool-use");
       assert.equal(result.outputJson?.decision, "block");
-      assert.match(String(result.outputJson?.reason ?? ""), /(?:Ralplan|Autopilot planning) is active .*implementation\/write tools are blocked/i);
+      assert.equal(String(result.outputJson?.reason ?? ""), PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK);
     } finally {
       await rm(cwd, { recursive: true, force: true });
     }
@@ -14576,7 +14606,7 @@ exit 0
 
       assert.equal(result.omxEventName, "pre-tool-use");
       assert.equal(result.outputJson?.decision, "block");
-      assert.match(String(result.outputJson?.reason ?? ""), /(?:Ralplan|Autopilot planning) is active .*implementation\/write tools are blocked/i);
+      assert.equal(String(result.outputJson?.reason ?? ""), PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK);
     } finally {
       await rm(cwd, { recursive: true, force: true });
     }
@@ -14652,7 +14682,7 @@ exit 0
     }
   });
 
-  it("allows mapped ralplan planning artifact writes without execution handoff", async () => {
+  it("allows mapped non-heredoc ralplan planning artifact writes without execution handoff", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "omx-native-hook-ralplan-native-map-artifact-"));
     try {
       const stateDir = join(cwd, ".omx", "state");
@@ -14674,7 +14704,7 @@ exit 0
           session_id: nativeSessionId,
           thread_id: "thread-ralplan-native-map-artifact",
           tool_name: "Bash",
-          tool_input: { command: "cat <<'EOF' > .omx/plans/prd-native-map.md\nplanning\nEOF" },
+          tool_input: { command: "printf '%s\\n' planning > .omx/plans/prd-native-map.md" },
         },
         { cwd },
       );
@@ -14970,13 +15000,13 @@ exit 0
 
       assert.equal(result.omxEventName, "pre-tool-use");
       assert.equal(result.outputJson?.decision, "block");
-      assert.match(String(result.outputJson?.reason ?? ""), /(?:Ralplan|Autopilot planning) is active .*implementation\/write tools are blocked/i);
+      assert.equal(String(result.outputJson?.reason ?? ""), PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK);
     } finally {
       await rm(cwd, { recursive: true, force: true });
     }
   });
 
-  it("allows bash planning artifact writes while ralplan is active without execution handoff", async () => {
+  it("blocks heredoc and allows non-heredoc bash planning artifact writes while ralplan is active without execution handoff", async () => {
     const cwd = await mkdtemp(join(tmpdir(), "omx-native-hook-ralplan-pretool-bash-artifact-"));
     try {
       const stateDir = join(cwd, ".omx", "state");
@@ -14997,7 +15027,7 @@ exit 0
         session_id: sessionId,
       });
 
-      const result = await dispatchCodexNativeHook(
+      const blockedHeredoc = await dispatchCodexNativeHook(
         {
           hook_event_name: "PreToolUse",
           cwd,
@@ -15009,7 +15039,22 @@ exit 0
         { cwd },
       );
 
-      assert.equal(result.omxEventName, "pre-tool-use");
+      assert.equal(blockedHeredoc.omxEventName, "pre-tool-use");
+      assert.equal(blockedHeredoc.outputJson?.decision, "block");
+      assert.equal(String(blockedHeredoc.outputJson?.reason ?? ""), PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK);
+
+      const result = await dispatchCodexNativeHook(
+        {
+          hook_event_name: "PreToolUse",
+          cwd,
+          session_id: sessionId,
+          thread_id: "thread-ralplan-pretool-bash-artifact",
+          tool_name: "Bash",
+          tool_input: { command: "printf '%s\\n' planning > .omx/plans/prd-issue-2603.md" },
+        },
+        { cwd },
+      );
+
       assert.equal(result.outputJson, null);
     } finally {
       await rm(cwd, { recursive: true, force: true });

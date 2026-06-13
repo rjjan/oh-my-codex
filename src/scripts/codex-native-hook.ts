@@ -64,6 +64,12 @@ import {
   detectMcpTransportFailure,
   hasAnyPattern,
 } from "./codex-native-pre-post.js";
+import {
+  DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES,
+  RALPLAN_ALLOWED_WRITE_PREFIXES,
+  evaluatePlanningBashWritePolicy,
+  evaluatePlanningFileToolPolicy,
+} from "./planning-artifact-write-policy.js";
 import { handleTeamWorkerPostToolUseSuccess } from "./notify-hook/team-worker-posttooluse.js";
 import { maybeNudgeLeaderForAllowedWorkerStop } from "./notify-hook/team-worker-stop.js";
 import {
@@ -2590,31 +2596,6 @@ async function readStopSessionPinnedState(
   return readJsonIfExists(statePath);
 }
 
-const DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES = [
-  ".omx/context",
-  ".omx/interviews",
-  ".omx/specs",
-  ".omx/state",
-] as const;
-
-const RALPLAN_ALLOWED_WRITE_PREFIXES = [
-  ".omx/context",
-  ".omx/plans",
-  ".omx/specs",
-  ".omx/state",
-] as const;
-
-const PLANNING_MODE_IMPLEMENTATION_TOOL_NAMES = new Set([
-  "Write",
-  "Edit",
-  "MultiEdit",
-  "NotebookEdit",
-  "apply_patch",
-  "ApplyPatch",
-]);
-
-const DEEP_INTERVIEW_IMPLEMENTATION_TOOL_NAMES = PLANNING_MODE_IMPLEMENTATION_TOOL_NAMES;
-
 const RALPLAN_EXECUTION_HANDOFF_SKILLS = new Set([
   // Autopilot is intentionally excluded: it supervises planning phases such as
   // ralplan/replan and is not by itself an execution authorization.
@@ -2663,88 +2644,9 @@ function hasExplicitExecutionHandoffSkill(
   ));
 }
 
-function isAllowedPlanningArtifactPath(
-  cwd: string,
-  rawPath: string,
-  allowedPrefixes: readonly string[],
-): boolean {
-  const trimmed = rawPath.trim().replace(/^['"]|['"]$/g, "");
-  if (!trimmed || trimmed.includes("\0")) return false;
-  let relativePath: string;
-  try {
-    const absolute = resolve(cwd, trimmed);
-    relativePath = relative(cwd, absolute).replace(/\\/g, "/");
-  } catch {
-    return false;
-  }
-  if (!relativePath || relativePath.startsWith("..") || relativePath.startsWith("/")) return false;
-  return allowedPrefixes.some((prefix) => (
-    relativePath === prefix || relativePath.startsWith(`${prefix}/`)
-  ));
-}
-
-function isAllowedDeepInterviewArtifactPath(cwd: string, rawPath: string): boolean {
-  return isAllowedPlanningArtifactPath(cwd, rawPath, DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES);
-}
-
-function isAllowedRalplanArtifactPath(cwd: string, rawPath: string): boolean {
-  return isAllowedPlanningArtifactPath(cwd, rawPath, RALPLAN_ALLOWED_WRITE_PREFIXES);
-}
-
 function readPreToolUseCommand(payload: CodexHookPayload): string {
   const toolInput = safeObject(payload.tool_input);
   return safeString(toolInput.command).trim();
-}
-
-function readPreToolUsePathCandidates(payload: CodexHookPayload): string[] {
-  const input = safeObject(payload.tool_input);
-  const candidates = [
-    input.file_path,
-    input.filePath,
-    input.path,
-    input.target_path,
-    input.targetPath,
-  ];
-  return candidates.map((candidate) => safeString(candidate).trim()).filter(Boolean);
-}
-
-function isNullDeviceRedirectTarget(target: string): boolean {
-  const normalized = target.trim().replace(/^['"]|['"]$/g, "").toLowerCase();
-  return normalized === "/dev/null" || normalized === "nul";
-}
-
-function extractDeepInterviewCommandRedirectTargets(command: string): string[] {
-  const targets: string[] = [];
-  for (const match of command.matchAll(/(?:^|[^>])>{1,2}\s*(["']?)([^\s&|;<>]+)\1/g)) {
-    const candidate = safeString(match[2]).trim();
-    if (candidate && !isNullDeviceRedirectTarget(candidate)) targets.push(candidate);
-  }
-  return targets;
-}
-
-function commandHasDeepInterviewWriteIntent(command: string): boolean {
-  return /\bapply_patch\b/.test(command)
-    || extractDeepInterviewCommandRedirectTargets(command).length > 0
-    || /\btee\s+(?:-a\s+)?[^\s&|;]+/.test(command)
-    || /\bsed\s+(?:[^\n;&|]*\s)?-i(?:\b|['"])/.test(command)
-    || /\b(?:python3?|node|perl|ruby)\b[\s\S]{0,260}\b(?:writeFileSync|writeFile|write_text|open\([^)]*["']w|File\.write|Path\()/.test(command)
-    || /\b(?:git\s+(?:checkout|switch|restore|reset|apply|am|merge|rebase)|npm\s+(?:install|i|ci)|pnpm\s+(?:install|i)|yarn\s+(?:install|add))\b/.test(command);
-}
-
-function extractDeepInterviewCommandWriteTargets(command: string): string[] {
-  const targets = extractDeepInterviewCommandRedirectTargets(command);
-  for (const match of command.matchAll(/\btee\s+(?:-a\s+)?(["']?)([^\s&|;<>]+)\1/g)) {
-    const candidate = safeString(match[2]).trim();
-    if (candidate) targets.push(candidate);
-  }
-  return targets;
-}
-
-function isAllowedDeepInterviewBashWrite(cwd: string, command: string): boolean {
-  if (!commandHasDeepInterviewWriteIntent(command)) return true;
-  if (/\bomx\s+(?:state\s+(?:write|read|clear)|question)\b/.test(command)) return true;
-  const targets = extractDeepInterviewCommandWriteTargets(command);
-  return targets.length > 0 && targets.every((target) => isAllowedDeepInterviewArtifactPath(cwd, target));
 }
 
 async function readActiveDeepInterviewStateForPreToolUse(
@@ -2818,13 +2720,6 @@ async function readActiveRalplanStateForPreToolUse(
   return hasActiveAutopilotSkill ? autopilotState : null;
 }
 
-function isAllowedRalplanBashWrite(cwd: string, command: string): boolean {
-  if (!commandHasDeepInterviewWriteIntent(command)) return true;
-  if (/\bomx\s+(?:state\s+(?:write|read|clear)|question)\b/.test(command)) return true;
-  const targets = extractDeepInterviewCommandWriteTargets(command);
-  return targets.length > 0 && targets.every((target) => isAllowedRalplanArtifactPath(cwd, target));
-}
-
 async function buildRalplanPreToolUseBoundaryOutput(
   payload: CodexHookPayload,
   cwd: string,
@@ -2838,14 +2733,26 @@ async function buildRalplanPreToolUseBoundaryOutput(
 
   const toolName = safeString(payload.tool_name).trim();
   const command = readPreToolUseCommand(payload);
-  const pathCandidates = readPreToolUsePathCandidates(payload);
   let blocked = false;
+  let policyFeedback = "";
 
   if (toolName === "Bash") {
-    blocked = !isAllowedRalplanBashWrite(cwd, command);
-  } else if (PLANNING_MODE_IMPLEMENTATION_TOOL_NAMES.has(toolName)) {
-    blocked = pathCandidates.length === 0
-      || !pathCandidates.every((candidate) => isAllowedRalplanArtifactPath(cwd, candidate));
+    const policy = evaluatePlanningBashWritePolicy({
+      cwd,
+      command,
+      allowedPrefixes: RALPLAN_ALLOWED_WRITE_PREFIXES,
+    });
+    blocked = !policy.allowed;
+    policyFeedback = policy.feedback ?? "";
+  } else {
+    const policy = evaluatePlanningFileToolPolicy({
+      cwd,
+      toolName,
+      toolInput: payload.tool_input,
+      allowedPrefixes: RALPLAN_ALLOWED_WRITE_PREFIXES,
+    });
+    blocked = policy.applies && !policy.allowed;
+    policyFeedback = policy.feedback ?? "";
   }
 
   if (!blocked) return null;
@@ -2858,11 +2765,11 @@ async function buildRalplanPreToolUseBoundaryOutput(
     : "Ralplan is consensus-planning mode";
   return {
     decision: "block",
-    reason: `${planningModeLabel} is active (phase: ${phase}); implementation/write tools are blocked until an explicit execution handoff workflow is activated.`,
+    reason: policyFeedback || `${planningModeLabel} is active (phase: ${phase}); implementation/write tools are blocked until an explicit execution handoff workflow is activated.`,
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       additionalContext:
-        `${planningModeDescription}. `
+        `${policyFeedback ? `${policyFeedback} ` : ""}${planningModeDescription}. `
         + "Write only planning artifacts under `.omx/context/`, `.omx/plans/`, `.omx/specs/`, or required `.omx/state/` files. "
         + "Do not edit implementation files or run implementation-focused writes from planning phases. "
         + `To execute, first process an explicit handoff such as ${formatExecutionHandoffList(cwd)}, which must emit terminal planning state before implementation begins.`,
@@ -2883,14 +2790,26 @@ async function buildDeepInterviewPreToolUseBoundaryOutput(
 
   const toolName = safeString(payload.tool_name).trim();
   const command = readPreToolUseCommand(payload);
-  const pathCandidates = readPreToolUsePathCandidates(payload);
   let blocked = false;
+  let policyFeedback = "";
 
   if (toolName === "Bash") {
-    blocked = !isAllowedDeepInterviewBashWrite(cwd, command);
-  } else if (DEEP_INTERVIEW_IMPLEMENTATION_TOOL_NAMES.has(toolName)) {
-    blocked = pathCandidates.length === 0
-      || !pathCandidates.every((candidate) => isAllowedDeepInterviewArtifactPath(cwd, candidate));
+    const policy = evaluatePlanningBashWritePolicy({
+      cwd,
+      command,
+      allowedPrefixes: DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES,
+    });
+    blocked = !policy.allowed;
+    policyFeedback = policy.feedback ?? "";
+  } else {
+    const policy = evaluatePlanningFileToolPolicy({
+      cwd,
+      toolName,
+      toolInput: payload.tool_input,
+      allowedPrefixes: DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES,
+    });
+    blocked = policy.applies && !policy.allowed;
+    policyFeedback = policy.feedback ?? "";
   }
 
   if (!blocked) return null;
@@ -2898,11 +2817,11 @@ async function buildDeepInterviewPreToolUseBoundaryOutput(
   const phase = formatPhase(activeState.current_phase ?? activeState.currentPhase, "planning");
   return {
     decision: "block",
-    reason: `Deep-interview is active (phase: ${phase}); implementation/write tools are blocked until an explicit handoff workflow is activated.`,
+    reason: policyFeedback || `Deep-interview is active (phase: ${phase}); implementation/write tools are blocked until an explicit handoff workflow is activated.`,
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       additionalContext:
-        `Deep-interview is requirements/spec mode. Treat detailed user answers as interview/spec material, not implicit implementation authorization. You may write only deep-interview artifacts under \`.omx/context/\`, \`.omx/interviews/\`, \`.omx/specs/\`, or required \`.omx/state/\` files. To implement, first ask for or process an explicit transition such as \`$ralplan\`, \`$autopilot\`, ${formatExecutionHandoffList(cwd)}.`,
+        `${policyFeedback ? `${policyFeedback} ` : ""}Deep-interview is requirements/spec mode. Treat detailed user answers as interview/spec material, not implicit implementation authorization. You may write only deep-interview artifacts under \`.omx/context/\`, \`.omx/interviews/\`, \`.omx/specs/\`, or required \`.omx/state/\` files. To implement, first ask for or process an explicit transition such as \`$ralplan\`, \`$autopilot\`, ${formatExecutionHandoffList(cwd)}.`,
     },
   };
 }
