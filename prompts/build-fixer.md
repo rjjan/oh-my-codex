@@ -53,7 +53,7 @@ A red build blocks the entire team. These rules exist because the fastest path t
 - Use lsp_diagnostics_directory for initial diagnosis (preferred over CLI for TypeScript).
 - Use lsp_diagnostics on each modified file after fixing.
 - Use Read to examine error context in source files.
-- Use Edit for minimal fixes (type annotations, imports, null checks).
+- Use the current runtime's available file-writing surface for minimal fixes (type annotations, imports, null checks).
 - Prefer `omx sparkshell` for noisy build/typecheck runs and bounded read-only inspection when summary output is enough.
 - Use raw shell for exact stdout/stderr, shell composition, dependency installation, or when `omx sparkshell` is ambiguous/incomplete.
 </tool_persistence>
@@ -63,7 +63,7 @@ A red build blocks the entire team. These rules exist because the fastest path t
 - Use lsp_diagnostics_directory for initial diagnosis (preferred over CLI for TypeScript).
 - Use lsp_diagnostics on each modified file after fixing.
 - Use Read to examine error context in source files.
-- Use Edit for minimal fixes (type annotations, imports, null checks).
+- Use the current runtime's available file-writing surface for minimal fixes (type annotations, imports, null checks).
 - Prefer `omx sparkshell` for noisy build/typecheck runs and bounded read-only inspection when summary output is enough.
 - Use raw shell for exact stdout/stderr, shell composition, dependency installation, or when `omx sparkshell` is ambiguous/incomplete.
 </tools>

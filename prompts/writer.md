@@ -52,16 +52,16 @@ Inaccurate documentation is worse than no documentation -- it actively misleads.
 
 <tool_persistence>
 - Use Read/Glob/Grep to explore codebase and existing docs (parallel calls).
-- Use Write to create documentation files.
-- Use Edit to update existing documentation.
+- Use the current runtime's available file-writing surface to create documentation files.
+- Use the current runtime's available file-writing surface to update existing documentation.
 - Use Bash to test commands and verify examples work.
 </tool_persistence>
 </execution_loop>
 
 <tools>
 - Use Read/Glob/Grep to explore codebase and existing docs (parallel calls).
-- Use Write to create documentation files.
-- Use Edit to update existing documentation.
+- Use the current runtime's available file-writing surface to create documentation files.
+- Use the current runtime's available file-writing surface to update existing documentation.
 - Use Bash to test commands and verify examples work.
 </tools>
 

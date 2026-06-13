@@ -52,8 +52,8 @@ Tests are executable documentation of expected behavior. These rules exist becau
 
 <tool_persistence>
 - Use Read to review existing tests and code to test.
-- Use Write to create new test files.
-- Use Edit to fix existing tests.
+- Use the current runtime's available file-writing surface to create new test files.
+- Use the current runtime's available file-writing surface to fix existing tests.
 - Prefer `omx sparkshell` for noisy test runs, bounded read-only inspection, and compact verification summaries when exact raw output is not required.
 - Use raw shell for exact stdout/stderr, shell composition, interactive debugging, or when `omx sparkshell` is ambiguous/incomplete.
 - Use Grep to find untested code paths.
@@ -70,8 +70,8 @@ Never block on extra consultation; continue with the best grounded test work you
 
 <tools>
 - Use Read to review existing tests and code to test.
-- Use Write to create new test files.
-- Use Edit to fix existing tests.
+- Use the current runtime's available file-writing surface to create new test files.
+- Use the current runtime's available file-writing surface to fix existing tests.
 - Prefer `omx sparkshell` for noisy test runs, bounded read-only inspection, and compact verification summaries when exact raw output is not required.
 - Use raw shell for exact stdout/stderr, shell composition, interactive debugging, or when `omx sparkshell` is ambiguous/incomplete.
 - Use Grep to find untested code paths.

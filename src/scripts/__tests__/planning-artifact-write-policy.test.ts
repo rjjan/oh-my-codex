@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES,
-  PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK,
   RALPLAN_ALLOWED_WRITE_PREFIXES,
   evaluatePlanningBashWritePolicy,
   evaluatePlanningFileToolPolicy,
@@ -27,16 +26,16 @@ describe("planning-artifact-write-policy", () => {
     assert.deepEqual(extractPlanningCommandRedirectTargets(command), [".omx/context/interview.md"]);
   });
 
-  it("blocks Bash heredoc file writes to planning artifacts", () => {
+  it("allows Bash heredoc file writes to planning artifacts", () => {
     const result = evaluatePlanningBashWritePolicy({
       cwd,
       command: "cat <<'EOF' > .omx/specs/deep-interview-lox.md\n# Spec\nEOF",
       allowedPrefixes: DEEP_INTERVIEW_ALLOWED_WRITE_PREFIXES,
     });
 
-    assert.equal(result.allowed, false);
-    assert.equal(result.reason, "bash-heredoc-write");
-    assert.equal(result.feedback, PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK);
+    assert.equal(result.allowed, true);
+    assert.equal(result.reason, "allowed-targets");
+    assert.deepEqual(result.targets, [".omx/specs/deep-interview-lox.md"]);
   });
 
   it("allows heredocs with no file write intent", () => {

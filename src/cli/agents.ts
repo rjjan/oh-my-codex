@@ -103,7 +103,7 @@ function scaffoldAgentToml(name: string): string {
     `# model = "${DEFAULT_AGENT_MODEL}"`,
     '# model_reasoning_effort = "medium"',
     '# temperature = 0.2',
-    '# tools = ["shell", "apply_patch"]',
+    '# tools = ["shell"]',
     '',
   ].join('\n');
 }

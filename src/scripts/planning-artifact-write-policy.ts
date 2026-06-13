@@ -14,9 +14,6 @@ export const RALPLAN_ALLOWED_WRITE_PREFIXES = [
   ".omx/state",
 ] as const;
 
-export const PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK =
-  "Bash heredoc file writes are not allowed for planning artifacts. No artifact was written. Retry with apply_patch, Write, or Edit.";
-
 const PLANNING_FILE_TOOL_NAMES = new Set([
   "Write",
   "Edit",
@@ -30,7 +27,6 @@ const APPLY_PATCH_TOOL_NAMES = new Set(["apply_patch", "ApplyPatch"]);
 
 export type PlanningWritePolicyReason =
   | "allowed-targets"
-  | "bash-heredoc-write"
   | "disallowed-targets"
   | "missing-targets"
   | "no-write-intent"
@@ -209,15 +205,6 @@ export function evaluatePlanningBashWritePolicy(
   }
 
   const targets = extractPlanningCommandWriteTargets(input.command);
-  if (commandHasBashHeredoc(input.command)) {
-    return {
-      applies: true,
-      allowed: false,
-      reason: "bash-heredoc-write",
-      targets,
-      feedback: PLANNING_HEREDOC_WRITE_BLOCK_FEEDBACK,
-    };
-  }
   if (targets.length === 0) {
     return { applies: true, allowed: false, reason: "missing-targets", targets };
   }
