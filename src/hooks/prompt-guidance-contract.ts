@@ -349,6 +349,8 @@ export const PROMPT_REFACTOR_INVARIANT_CONTRACTS: GuidanceSurfaceContract[] = [
       rx('Proposed Architecture'),
       rx('seven phase stories|7 phase stories'),
       rx('Architect/Critic review updates|Architect.*Critic.*review updates'),
+      rx('Critic Approval Refinements'),
+      rx('pending review placeholders?|no pending'),
     ],
   },
   {
@@ -360,6 +362,8 @@ export const PROMPT_REFACTOR_INVARIANT_CONTRACTS: GuidanceSurfaceContract[] = [
       rx('Proposed Architecture'),
       rx('seven phase stories|7 phase stories'),
       rx('Architect/Critic review updates|Architect.*Critic.*review updates'),
+      rx('Critic Approval Refinements'),
+      rx('pending review placeholders?|no pending'),
     ],
   },
   {

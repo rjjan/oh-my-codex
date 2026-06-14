@@ -2159,6 +2159,8 @@ describe("codex native hook dispatch", () => {
       assert.match(JSON.stringify(result.outputJson), /proposed architecture/i);
       assert.match(JSON.stringify(result.outputJson), /seven phase stories/i);
       assert.match(JSON.stringify(result.outputJson), /Architect\/Critic review updates/i);
+      assert.match(JSON.stringify(result.outputJson), /Critic Approval Refinements/i);
+      assert.match(JSON.stringify(result.outputJson), /no pending review placeholders/i);
 
       assert.equal(
         existsSync(join(cwd, ".omx", "state", "skill-active-state.json")),
