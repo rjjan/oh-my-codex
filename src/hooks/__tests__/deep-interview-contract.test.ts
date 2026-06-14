@@ -302,6 +302,22 @@ describe("deep-interview Ouroboros contract", () => {
 		);
 	});
 
+	it("documents parser-safe omx question input through a temp JSON file", () => {
+		assert.ok(
+			deepInterviewSkill.includes("Do not call `omx question '{json}'`"),
+			"deep-interview should forbid the positional JSON form Gemma4 tried",
+		);
+		assert.ok(
+			deepInterviewSkill.includes(".omx/temp_question.json"),
+			"deep-interview should name a temp JSON payload file",
+		);
+		assert.ok(
+			deepInterviewSkill.includes('omx question --input "$(cat .omx/temp_question.json)" --json'),
+			"deep-interview should show the safe --input plus cat pattern",
+		);
+		assert.ok(pluginDeepInterviewSkill.includes('omx question --input "$(cat .omx/temp_question.json)" --json'));
+	});
+
 	it("teaches canonical single-choice vs multi-answerable omx question payloads", () => {
 		assert.match(
 			deepInterviewSkill,

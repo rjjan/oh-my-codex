@@ -2153,6 +2153,7 @@ describe("codex native hook dispatch", () => {
       assert.equal(result.skillState?.skill, "ralplan");
       assert.ok(result.outputJson, "UserPromptSubmit should emit developer context");
       assert.match(JSON.stringify(result.outputJson), /use CLI-first state updates via `omx state write\/read\/clear --input '<json>' --json`/);
+      assert.match(JSON.stringify(result.outputJson), /do not run `omx ralplan` or `omx ralplan --direct`/i);
 
       assert.equal(
         existsSync(join(cwd, ".omx", "state", "skill-active-state.json")),

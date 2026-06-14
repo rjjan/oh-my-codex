@@ -204,6 +204,14 @@ Round {n} | Target: {weakest_dimension} | Ambiguity: {score}%
 
 `omx question` payload guidance for interview rounds:
 - Deep-interview is Socratic: ask one focused round at a time. Do not use batch `questions[]` to combine multiple interview rounds, even though `omx question` supports batch forms for other workflows.
+- Do not call `omx question '{json}'`. That positional JSON form is shell-fragile and is not the canonical CLI contract.
+- When using Bash/tmux paths, prefer a temp JSON payload file and pass it through `--input`, for example:
+
+```bash
+OMX_QUESTION_RETURN_PANE=$TMUX_PANE omx question --input "$(cat .omx/temp_question.json)" --json
+```
+
+  Write `.omx/temp_question.json` first, keep the JSON valid, then wait for the command to return and read the JSON response.
 - Use canonical `type` values instead of authoring raw `multi_select` flags by hand. `type: "single-answerable"` is the default for one-path decisions; `type: "multi-answerable"` is the canonical shape for bounded multi-select rounds. The runtime will keep `multi_select` aligned with `type`.
 - Use `single-answerable` when exactly one answer should drive the next branch, the options are mutually exclusive, or selecting more than one answer would blur the decision boundary. Typical cases: handoff lane selection, choosing the primary failure mode, or confirming which of several competing interpretations is correct.
 - Use `multi-answerable` when multiple options may all be true at once and you need to capture a bounded set of coexisting constraints, non-goals, risks, or acceptance checks in one round. Typical cases: selecting all out-of-scope items, all success metrics that must hold, or all deployment constraints that apply together.

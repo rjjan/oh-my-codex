@@ -317,6 +317,23 @@ describe('RALPLAN-DR in ralplan/SKILL.md', () => {
     assert.match(ralplanSkill, /Ultragoal as the default durable goal-mode follow-up/i);
     assert.match(ralplanSkill, /Ralph only for intentionally selected persistent single-owner/i);
   });
+
+  it('should distinguish $ralplan workflow activation from nonexistent shell commands', () => {
+    assert.match(ralplanSkill, /\$ralplan is a Codex\/OMX workflow keyword/i);
+    assert.match(ralplanSkill, /Never run `omx ralplan` or `omx ralplan --direct`/i);
+    assert.match(ralplanSkill, /nonexistent shell command/i);
+  });
+
+  it('should require terminal ralplan state after consensus artifacts are written', () => {
+    assert.match(ralplanSkill, /After PRD and test-spec artifacts exist/i);
+    assert.match(ralplanSkill, /omx state write --input '<json>' --json/i);
+    assert.match(ralplanSkill, /mode:"ralplan"/i);
+    assert.match(ralplanSkill, /active:false/i);
+    assert.match(ralplanSkill, /current_phase:"complete"/i);
+    assert.match(ralplanSkill, /lifecycle_outcome:"finished"/i);
+    assert.match(ralplanSkill, /run_outcome:"finish"/i);
+    assert.match(ralplanSkill, /ralplan_consensus_gate/i);
+  });
 });
 
 describe('Architect prompt RALPLAN-DR sections', () => {

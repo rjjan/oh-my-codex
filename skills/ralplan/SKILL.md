@@ -13,6 +13,10 @@ Ralplan is a shorthand alias for `$plan --consensus`. It triggers iterative plan
 $ralplan "task description"
 ```
 
+## Activation Surface
+
+$ralplan is a Codex/OMX workflow keyword, not a shell command. Never run `omx ralplan` or `omx ralplan --direct`; that is a nonexistent shell command. When the prompt begins with `$ralplan`, stay in the current Codex workflow turn, follow this skill, and use shell only for valid supporting commands such as `omx state write/read --input '<json>' --json` or artifact validation.
+
 ## Flags
 
 - `--interactive`: Enables user prompts at key decision points (draft review in step 2 and final approval in step 6). Without this flag the workflow runs fully automated — Planner → Architect → Critic loop — and outputs the final plan without asking for confirmation.
@@ -88,6 +92,8 @@ Before any Autopilot, Pipeline, Ultragoal, Team, Ralph, or implementation handof
 - `ralplan_consensus_gate.complete:true` only when both reviews are present, approving, and in the required Architect→Critic order.
 
 If Architect is missing/blocked, keep the workflow in Architect review or report that blocker. If Critic is missing/blocked/non-approving, keep the workflow in Critic/re-review or report the max-iteration outcome. Do not treat existing plan/test-spec files as permission to skip ralplan or start execution.
+
+After PRD and test-spec artifacts exist and the Architect then Critic consensus gate is approved, persist terminal ralplan mode state with `omx state write --input '<json>' --json`. The final state must include `mode:"ralplan"`, `active:false`, `current_phase:"complete"`, `lifecycle_outcome:"finished"`, `run_outcome:"finish"`, PRD/test-spec artifact paths, and `ralplan_consensus_gate` with complete/approved evidence. Do not rely on filesystem artifacts or Codex rollout `task_complete` alone; downstream gates require the terminal ralplan state.
 
 Follow the Plan skill's full documentation for consensus mode details.
 

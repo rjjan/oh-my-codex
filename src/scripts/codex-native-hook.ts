@@ -1938,6 +1938,9 @@ function buildAdditionalContextMessage(
   const ralphPromptActivationNote = skillState?.initialized_mode === "ralph"
     ? "Prompt-side `$ralph` activation seeds Ralph workflow state only; it does not invoke `omx ralph`. Use `omx ralph --prd ...` only when you explicitly want the PRD-gated CLI startup path."
     : null;
+  const ralplanPromptActivationNote = skillState?.initialized_mode === "ralplan" || match.skill === "ralplan"
+    ? "Prompt-side `$ralplan` activation seeds the ralplan workflow state and loads the consensus-planning skill; do not run `omx ralplan` or `omx ralplan --direct`, because no such shell command exists. Use `omx state write/read --input '<json>' --json` only for workflow state persistence."
+    : null;
   const deepInterviewPromptActivationNote = skillState?.initialized_mode === "deep-interview"
     ? buildDeepInterviewQuestionBridgeInstruction(cwd, payload)
     : null;
@@ -1976,6 +1979,7 @@ function buildAdditionalContextMessage(
         : null,
       promptPriorityMessage,
       ultragoalPromptActivationNote,
+      ralplanPromptActivationNote,
       autopilotPromptActivationNote,
       deepInterviewConfigPromptActivationNote,
       skillState.initialized_mode && skillState.initialized_state_path
@@ -2005,6 +2009,7 @@ function buildAdditionalContextMessage(
       deepInterviewConfigPromptActivationNote,
       ultraworkPromptActivationNote,
       ultragoalPromptActivationNote,
+      ralplanPromptActivationNote,
       autopilotPromptActivationNote,
       buildTeamRuntimeInstruction(cwd, payload),
       buildTeamHelpInstruction(cwd, payload),
@@ -2025,13 +2030,14 @@ function buildAdditionalContextMessage(
       deepInterviewConfigPromptActivationNote,
       ultraworkPromptActivationNote,
       ultragoalPromptActivationNote,
+      ralplanPromptActivationNote,
       autopilotPromptActivationNote,
       ralphPromptActivationNote,
       "Follow AGENTS.md routing and preserve workflow transition and planning-safety rules.",
     ].join(" ");
   }
 
-  return [detectedKeywordMessage, promptPriorityMessage, ultragoalPromptActivationNote, autopilotPromptActivationNote, "Follow AGENTS.md routing and preserve workflow transition and planning-safety rules."].filter(Boolean).join(" ");
+  return [detectedKeywordMessage, promptPriorityMessage, ultragoalPromptActivationNote, ralplanPromptActivationNote, autopilotPromptActivationNote, "Follow AGENTS.md routing and preserve workflow transition and planning-safety rules."].filter(Boolean).join(" ");
 }
 
 function parseTeamWorkerEnv(rawValue: string): { teamName: string; workerName: string } | null {
