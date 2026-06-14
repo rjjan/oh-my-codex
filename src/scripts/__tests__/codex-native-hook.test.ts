@@ -2159,12 +2159,17 @@ describe("codex native hook dispatch", () => {
       assert.match(JSON.stringify(result.outputJson), /proposed architecture/i);
       assert.match(JSON.stringify(result.outputJson), /seven phase stories/i);
       assert.match(JSON.stringify(result.outputJson), /Consensus Review Updates/i);
+      assert.match(JSON.stringify(result.outputJson), /Initial draft rule/i);
+      assert.match(JSON.stringify(result.outputJson), /omit the entire consensus review section/i);
       assert.match(JSON.stringify(result.outputJson), /Architect Review Updates/i);
       assert.match(JSON.stringify(result.outputJson), /Critic Approval Refinements/i);
       assert.match(JSON.stringify(result.outputJson), /PRD root/i);
+      assert.match(JSON.stringify(result.outputJson), /cleanup self-check/i);
       assert.match(JSON.stringify(result.outputJson), /no pending review placeholders/i);
       assert.match(JSON.stringify(result.outputJson), /bare `?\(Pending\)`?/i);
       assert.match(JSON.stringify(result.outputJson), /duplicate `?## Consensus Review Updates`?/i);
+      assert.match(JSON.stringify(result.outputJson), /duplicate `?### Architect Review Updates`?/i);
+      assert.match(JSON.stringify(result.outputJson), /duplicate `?### Critic Approval Refinements`?/i);
 
       assert.equal(
         existsSync(join(cwd, ".omx", "state", "skill-active-state.json")),
