@@ -2216,6 +2216,9 @@ enableChallengeModes = false
       assert.match(serializedOutput, /threshold=0\.05/);
       assert.match(serializedOutput, /max_rounds=15/);
       assert.match(serializedOutput, /enableChallengeModes=false/);
+      assert.match(serializedOutput, /Deep-interview Artifact Section Contract/);
+      assert.match(serializedOutput, /Clarity Table/);
+      assert.match(serializedOutput, /do not leave it only in chat/i);
 
       const modeState = JSON.parse(
         await readFile(join(cwd, ".omx", "state", "sessions", "sess-deep-interview-config", "deep-interview-state.json"), "utf-8"),
@@ -2407,6 +2410,9 @@ standardMaxRounds = 15
       assert.match(serializedOutput, /Deep-interview config override active/);
       assert.match(serializedOutput, /threshold=0\.05/);
       assert.match(serializedOutput, /max_rounds=15/);
+      assert.match(serializedOutput, /Deep-interview Artifact Section Contract/);
+      assert.match(serializedOutput, /Clarity Table/);
+      assert.match(serializedOutput, /do not leave it only in chat/i);
       assert.equal(modeState.profile, "standard");
       assert.equal(modeState.threshold, 0.05);
       assert.equal(modeState.max_rounds, 15);
@@ -4288,6 +4294,9 @@ ${JSON.stringify({
       assert.match(message, /workflow-like tokens inside the marked omx question answer are treated as answer text/);
       assert.match(message, /Deep-interview is active, but this session is not attached to tmux/);
       assert.match(message, /native structured question tool when available/);
+      assert.match(message, /Deep-interview Artifact Section Contract/);
+      assert.match(message, /Clarity Table/);
+      assert.match(message, /do not leave it only in chat/i);
       assert.doesNotMatch(message, /detected workflow keyword "\$ralplan" -> ralplan/);
       assert.equal(existsSync(join(sessionDir, "ralplan-state.json")), false);
     } finally {

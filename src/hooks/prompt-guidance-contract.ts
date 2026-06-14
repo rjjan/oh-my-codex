@@ -369,7 +369,23 @@ export const PROMPT_REFACTOR_INVARIANT_CONTRACTS: GuidanceSurfaceContract[] = [
   {
     id: 'deep-interview-question-gate',
     path: 'skills/deep-interview/SKILL.md',
-    requiredPatterns: [rx('omx\\s+question'), rx('Socratic|interview'), rx('ambiguity')],
+    requiredPatterns: [
+      rx('omx\\s+question'),
+      rx('Socratic|interview'),
+      rx('ambiguity'),
+      rx('Spec must use these exact required section headings'),
+      rx('## Clarity Table'),
+      rx('Do not leave.*clarity scoring.*only in chat'),
+    ],
+  },
+  {
+    id: 'deep-interview-plugin-artifact-contract',
+    path: 'plugins/oh-my-codex/skills/deep-interview/SKILL.md',
+    requiredPatterns: [
+      rx('Spec must use these exact required section headings'),
+      rx('## Clarity Table'),
+      rx('Do not leave.*clarity scoring.*only in chat'),
+    ],
   },
   {
     id: 'cancel-safety-boundary',

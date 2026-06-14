@@ -361,26 +361,18 @@ When threshold is met (or user exits with warning / hard cap):
    are ready for handoff. Do not rely on a Codex rollout `task_complete` event
    alone; downstream `$ralplan` requires this persisted completion gate.
 
-Spec should include:
-- Metadata (profile, rounds, final ambiguity, threshold, context type)
-- Context snapshot reference/path (for ralplan/team reuse)
-- Prompt-safe initial-context summary when oversized context was provided, plus references to any full source documents
-- Clarity breakdown table
-- Intent (why the user wants this)
-- Desired Outcome
-- In-Scope
-- Out-of-Scope / Non-goals
-- Decision Boundaries (what OMX may decide without confirmation)
-- Constraints
-- Testable acceptance criteria
-- Assumptions exposed + resolutions
-- Pressure-pass findings (which answer was revisited, and what changed)
-- Brownfield evidence vs inference notes for any repository-grounded confirmation questions
-- Docs/Terminology Ledger with inspected repo docs/rules/context, term conflicts, and any doc/code mismatch decisions
-- Scenario/edge-case pressure findings that materially shaped scope or acceptance criteria
-- Optional durable documentation recommendations, explicitly marked opt-in and public-safe; do not include raw private transcript dumps
-- Technical context findings
-- Full or condensed transcript
+Spec must use these exact required section headings before completion:
+- `## Metadata`
+- `## Clarity Table`
+- `## Intent`
+- `## Outcome`
+- `## In-Scope`
+- `## Non-goals`
+- `## Decision Boundaries`
+- `## Constraints`
+- `## Acceptance Criteria`
+
+The `## Clarity Table` section must contain the final ambiguity/clarity scoring table or bullet table that was used to decide the interview is ready for handoff. Do not leave the clarity scoring only in chat, status text, or workflow state. The final spec may also include supporting sections such as context snapshot reference/path, prompt-safe initial-context summary, assumptions exposed and resolutions, pressure-pass findings, brownfield evidence vs inference notes, Docs/Terminology Ledger, scenario or edge-case pressure findings, optional durable documentation recommendations, technical context findings, and full or condensed transcript.
 
 ### Autoresearch specialization
 

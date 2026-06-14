@@ -1784,6 +1784,14 @@ function buildDeepInterviewQuestionBridgeInstruction(cwd: string, payload?: Code
   }).deepInterviewInstruction;
 }
 
+function buildDeepInterviewArtifactContractInstruction(skillState?: SkillActiveState | null): string | null {
+  if (skillState?.initialized_mode !== "deep-interview") return null;
+  return [
+    "Deep-interview Artifact Section Contract: final `.omx/specs/deep-interview-*.md` must include exact required sections Metadata, Clarity Table, Intent, Outcome, In-Scope, Non-goals, Decision Boundaries, Constraints, and Acceptance Criteria.",
+    "Put the final ambiguity/clarity scoring table in the `Clarity Table` section; do not leave it only in chat, status text, or workflow state.",
+  ].join(" ");
+}
+
 function buildTeamRuntimeInstruction(cwd: string, payload?: CodexHookPayload): string {
   return resolveExecutionEnvironment(cwd, {
     hookEventName: "UserPromptSubmit",
@@ -1881,6 +1889,7 @@ function buildAdditionalContextMessage(
   const teamMode = readTeamModeConfig(cwd);
   const matches = detectKeywords(prompt).filter((entry) => teamMode.enabled || entry.skill !== "team");
   const match = matches[0] ?? null;
+  const deepInterviewArtifactContractNote = buildDeepInterviewArtifactContractInstruction(skillState);
   if (!match) {
     const continuedSkill = safeString(skillState?.skill).trim();
     if (!continuedSkill) return promptPriorityMessage;
@@ -1897,6 +1906,7 @@ function buildAdditionalContextMessage(
         ? buildSkillStateCliInstruction(skillState.initialized_mode, skillState.initialized_state_path)
         : null,
       deepInterviewPromptActivationNote,
+      deepInterviewArtifactContractNote,
       deepInterviewConfigPromptActivationNote,
       autopilotPromptActivationNote,
       "Follow AGENTS.md routing and preserve workflow transition and planning-safety rules.",
@@ -1923,6 +1933,7 @@ function buildAdditionalContextMessage(
         ? buildSkillStateCliInstruction(skillState.initialized_mode, skillState.initialized_state_path)
         : null,
       deepInterviewPromptActivationNote,
+      deepInterviewArtifactContractNote,
       deepInterviewConfigPromptActivationNote,
       autopilotPromptActivationNote,
       "Follow AGENTS.md routing and preserve workflow transition and planning-safety rules.",
@@ -1985,6 +1996,7 @@ function buildAdditionalContextMessage(
       ultragoalPromptActivationNote,
       ralplanPromptActivationNote,
       autopilotPromptActivationNote,
+      deepInterviewArtifactContractNote,
       deepInterviewConfigPromptActivationNote,
       skillState.initialized_mode && skillState.initialized_state_path
         ? buildSkillStateCliInstruction(skillState.initialized_mode, skillState.initialized_state_path)
@@ -2010,6 +2022,7 @@ function buildAdditionalContextMessage(
       promptPriorityMessage,
       initializedStateMessage,
       deepInterviewPromptActivationNote,
+      deepInterviewArtifactContractNote,
       deepInterviewConfigPromptActivationNote,
       ultraworkPromptActivationNote,
       ultragoalPromptActivationNote,
@@ -2031,6 +2044,7 @@ function buildAdditionalContextMessage(
       promptPriorityMessage,
       buildSkillStateCliInstruction(skillState.initialized_mode, skillState.initialized_state_path),
       deepInterviewPromptActivationNote,
+      deepInterviewArtifactContractNote,
       deepInterviewConfigPromptActivationNote,
       ultraworkPromptActivationNote,
       ultragoalPromptActivationNote,
