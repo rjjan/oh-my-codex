@@ -54,7 +54,7 @@ The consensus workflow:
    - Deliberate mode only: pre-mortem (3 scenarios) + expanded test plan (unit/integration/e2e/observability)
 2. **User feedback** *(--interactive only)*: If `--interactive` is set, use the structured question UI (`omx question` in attached tmux; native structured input outside tmux when available) to present the draft plan **plus the Principles / Drivers / Options summary** before review (Proceed to review / Request changes / Skip review). Otherwise, automatically proceed to review.
 3. **Architect** reviews for architectural soundness and must provide the strongest steelman antithesis, at least one real tradeoff tension, and (when possible) synthesis — **await completion before step 4**. Launch this as a subsequent `Architect` subagent (`agent_type: "architect"`) and pass the full task statement, context snapshot, PRD/test-spec paths, and relevant prior findings; do not use a default subagent with only a short improvised reviewer prompt. In deliberate mode, Architect should explicitly flag principle violations.
-4. **Critic** evaluates against quality criteria — run only after step 3 completes. Launch this as a subsequent `Critic` subagent (`agent_type: "critic"`) with the full task statement, context snapshot, PRD/test-spec paths, and the completed Architect review; do not ask the Architect subagent to perform the Critic gate and do not substitute a default subagent fantasy prompt for the packaged Critic role. Critic must enforce principle-option consistency, fair alternatives, risk mitigation clarity, testable acceptance criteria, and concrete verification steps. In deliberate mode, Critic must reject missing/weak pre-mortem or expanded test plan.
+4. **Critic** evaluates against quality criteria — run only after step 3 completes. Launch this as a subsequent `Critic` subagent (`agent_type: "critic"`) with the full task statement, context snapshot, PRD/test-spec paths, and the completed Architect review; do not ask the Architect subagent to perform the Critic gate and do not substitute a default subagent fantasy prompt for the packaged Critic role. Critic must enforce principle-option consistency, fair alternatives, risk mitigation clarity, testable acceptance criteria, concrete verification steps, and the PRD Artifact Quality Contract below. In deliberate mode, Critic must reject missing/weak pre-mortem or expanded test plan.
 5. **Re-review loop** (max 5 iterations): Any non-`APPROVE` Critic verdict (`ITERATE` or `REJECT`) MUST run the same full closed loop:
    a. Collect Architect and Critic feedback
    b. Revise the plan with Planner
@@ -79,6 +79,27 @@ $ralplan -> durable consensus artifact -> explicit execution lane -> $ultragoal 
 ```
 
 Before any execution lane begins, ralplan must emit terminal planning state (complete, paused, failed, or waiting for input) and the durable handoff record below. Do not continue from consensus planning into direct code edits in the same ralplan session.
+
+## PRD Artifact Quality Contract
+
+The final PRD must be implementation-ready, not a compact summary. For weaker local models, prefer the exact section names below and fill each section with concrete, task-specific detail. Section titles may vary only when the same semantic content remains explicit.
+
+Required PRD sections:
+
+- `Metadata / Source of Truth / Planning Boundary`: identify the task, PRD/test-spec paths, source documents, conflict priority, and the planning-only boundary. When present, cite repository requirements such as `requirement_v3.md`, verifier rules, existing scaffold constraints, and user-stated experiment constraints.
+- `Requirements Summary`: restate the desired outcome, in-scope work, non-goals, constraints, assumptions, and unresolved questions in implementation-facing language.
+- `RALPLAN-DR Summary`: record principles, decision drivers, viable options, selected approach, rejected alternatives, and decision rationale.
+- `Proposed Architecture`: describe the target modules, files, interfaces, state/data flow, ownership boundaries, and responsibility of each major component. Do not stop at a high-level approach.
+- `Stories`: include seven phase stories unless the task is demonstrably smaller. Each story must state scope, affected files/modules, edge cases, expected behavior, and at least one concrete test or verification command.
+- `Implementation Steps`: give a sequenced execution plan with dependencies, handoff points, and revert/failure behavior.
+- `Acceptance Criteria`: cover user-visible behavior, CLI commands, exit codes, stdout/stderr behavior, persistence/artifact rules, and domain-specific subsystems. For interpreter tasks this includes scanner, parser, resolver, runtime, functions, object-oriented behavior, and verifier expectations.
+- `Risks and Mitigations`: list likely failure modes, model/runtime risks, ambiguous requirements, and concrete mitigations.
+- `Verification Steps`: include exact commands, expected outputs, artifact checks, and what to do on failure.
+- `ADR`: include decision, drivers, alternatives considered, why chosen, consequences, and follow-ups.
+- `Staffing / Handoff`: include available agent roster, recommended lanes, reasoning levels, `$ultragoal`, `$team`, and explicit `$ralph` fallback guidance.
+- `Consensus Review Updates`: append Architect/Critic review updates, refinements, approval evidence, and any changes made after review.
+
+The Critic must reject a PRD as incomplete when it lacks source-of-truth boundaries, Proposed Architecture detail, seven phase stories for a normal implementation plan, concrete acceptance criteria, verification commands, staffing/handoff guidance, or Architect/Critic review updates. Do not treat PRD/test-spec file existence as enough evidence that this contract is satisfied.
 
 ## Durable Consensus Handoff Contract
 

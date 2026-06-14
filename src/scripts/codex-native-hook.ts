@@ -1939,7 +1939,11 @@ function buildAdditionalContextMessage(
     ? "Prompt-side `$ralph` activation seeds Ralph workflow state only; it does not invoke `omx ralph`. Use `omx ralph --prd ...` only when you explicitly want the PRD-gated CLI startup path."
     : null;
   const ralplanPromptActivationNote = skillState?.initialized_mode === "ralplan" || match.skill === "ralplan"
-    ? "Prompt-side `$ralplan` activation seeds the ralplan workflow state and loads the consensus-planning skill; do not run `omx ralplan` or `omx ralplan --direct`, because no such shell command exists. Use `omx state write/read --input '<json>' --json` only for workflow state persistence."
+    ? [
+      "Prompt-side `$ralplan` activation seeds the ralplan workflow state and loads the consensus-planning skill; do not run `omx ralplan` or `omx ralplan --direct`, because no such shell command exists. Use `omx state write/read --input '<json>' --json` only for workflow state persistence.",
+      "PRD Artifact Quality Contract: include source-of-truth and planning boundary, Requirements Summary, RALPLAN-DR Summary, Proposed Architecture, seven phase stories with edge cases and test commands, Implementation Steps, Acceptance Criteria, Risks and Mitigations, Verification Steps, ADR, staffing/handoff guidance, and Architect/Critic review updates.",
+      "Do not emit a compact PRD summary when the task needs implementation planning.",
+    ].join(" ")
     : null;
   const deepInterviewPromptActivationNote = skillState?.initialized_mode === "deep-interview"
     ? buildDeepInterviewQuestionBridgeInstruction(cwd, payload)

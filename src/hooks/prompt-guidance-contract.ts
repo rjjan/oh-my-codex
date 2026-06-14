@@ -339,7 +339,28 @@ export const PROMPT_REFACTOR_INVARIANT_CONTRACTS: GuidanceSurfaceContract[] = [
   {
     id: 'ralplan-consensus-sequence',
     path: 'skills/ralplan/SKILL.md',
-    requiredPatterns: [rx('Planner'), rx('Architect'), rx('Critic'), rx('ADR')],
+    requiredPatterns: [
+      rx('Planner'),
+      rx('Architect'),
+      rx('Critic'),
+      rx('ADR'),
+      rx('PRD Artifact Quality Contract'),
+      rx('Metadata / Source of Truth / Planning Boundary'),
+      rx('Proposed Architecture'),
+      rx('seven phase stories|7 phase stories'),
+      rx('Architect/Critic review updates|Architect.*Critic.*review updates'),
+    ],
+  },
+  {
+    id: 'ralplan-plugin-prd-quality-contract',
+    path: 'plugins/oh-my-codex/skills/ralplan/SKILL.md',
+    requiredPatterns: [
+      rx('PRD Artifact Quality Contract'),
+      rx('Metadata / Source of Truth / Planning Boundary'),
+      rx('Proposed Architecture'),
+      rx('seven phase stories|7 phase stories'),
+      rx('Architect/Critic review updates|Architect.*Critic.*review updates'),
+    ],
   },
   {
     id: 'deep-interview-question-gate',
