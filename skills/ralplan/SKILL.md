@@ -97,7 +97,7 @@ Required PRD sections:
 - `Verification Steps`: include exact commands, expected outputs, artifact checks, and what to do on failure.
 - `ADR`: include decision, drivers, alternatives considered, why chosen, consequences, and follow-ups.
 - `Staffing / Handoff`: include available agent roster, recommended lanes, reasoning levels, `$ultragoal`, `$team`, and explicit `$ralph` fallback guidance.
-- `Consensus Review Updates`: append explicit `### Architect Review Updates` and `### Critic Approval Refinements` subsections with verdicts, refinements, approval evidence, and any changes made after review. The final PRD must have no pending review placeholders.
+- `Consensus Review Updates`: append explicit `### Architect Review Updates` and `### Critic Approval Refinements` subsections with verdicts, refinements, approval evidence, and any changes made after review. The final PRD must have no pending review placeholders. Do not leave placeholder lines such as `(Pending Architect Review)` or `(Pending Critic Approval)`.
 
 The Critic must reject a PRD as incomplete when it lacks source-of-truth boundaries, Proposed Architecture detail, seven phase stories for a normal implementation plan, concrete acceptance criteria, verification commands, staffing/handoff guidance, `Architect Review Updates`, `Critic Approval Refinements`, or when it contains pending review placeholders. Do not treat PRD/test-spec file existence as enough evidence that this contract is satisfied.
 

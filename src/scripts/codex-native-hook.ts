@@ -1941,7 +1941,7 @@ function buildAdditionalContextMessage(
   const ralplanPromptActivationNote = skillState?.initialized_mode === "ralplan" || match.skill === "ralplan"
     ? [
       "Prompt-side `$ralplan` activation seeds the ralplan workflow state and loads the consensus-planning skill; do not run `omx ralplan` or `omx ralplan --direct`, because no such shell command exists. Use `omx state write/read --input '<json>' --json` only for workflow state persistence.",
-      "PRD Artifact Quality Contract: include source-of-truth and planning boundary, Requirements Summary, RALPLAN-DR Summary, Proposed Architecture, seven phase stories with edge cases and test commands, Implementation Steps, Acceptance Criteria, Risks and Mitigations, Verification Steps, ADR, staffing/handoff guidance, Architect/Critic review updates, explicit Critic Approval Refinements, and no pending review placeholders.",
+      "PRD Artifact Quality Contract: include source-of-truth and planning boundary, Requirements Summary, RALPLAN-DR Summary, Proposed Architecture, seven phase stories with edge cases and test commands, Implementation Steps, Acceptance Criteria, Risks and Mitigations, Verification Steps, ADR, staffing/handoff guidance, Architect/Critic review updates, explicit Critic Approval Refinements, and no pending review placeholders such as Pending Architect Review or Pending Critic Approval.",
       "Do not emit a compact PRD summary when the task needs implementation planning.",
     ].join(" ")
     : null;
