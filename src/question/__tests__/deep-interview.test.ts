@@ -118,6 +118,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     assert.equal(inFlightQuestionStatus, 'pending');
 
     const finalState = JSON.parse(await readFile(statePath, 'utf-8')) as {
+      active?: boolean;
+      completed_at?: string;
+      current_phase?: string;
       lifecycle_outcome?: string;
       question_enforcement?: {
         obligation_id?: string;
@@ -133,6 +136,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     assert.equal(finalState.question_enforcement?.question_id, 'question-1');
     assert.ok(finalState.question_enforcement?.obligation_id);
     assert.ok(finalState.question_enforcement?.satisfied_at);
+    assert.equal(finalState.active, true);
+    assert.equal(finalState.current_phase, 'intent-first');
+    assert.equal(finalState.completed_at, undefined);
     assert.equal(finalState.lifecycle_outcome, undefined);
     assert.equal(finalState.run_outcome, undefined);
   });
@@ -173,6 +179,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     );
 
     const finalState = JSON.parse(await readFile(statePath, 'utf-8')) as {
+      active?: boolean;
+      completed_at?: string;
+      current_phase?: string;
       lifecycle_outcome?: string;
       question_enforcement?: {
         lifecycle_outcome?: string;
@@ -186,6 +195,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     assert.equal(finalState.question_enforcement?.lifecycle_outcome, 'askuserQuestion');
     assert.equal(finalState.question_enforcement?.clear_reason, 'error');
     assert.ok(finalState.question_enforcement?.cleared_at);
+    assert.equal(finalState.active, true);
+    assert.equal(finalState.current_phase, 'intent-first');
+    assert.equal(finalState.completed_at, undefined);
     assert.equal(finalState.lifecycle_outcome, undefined);
     assert.equal(finalState.run_outcome, undefined);
   });
@@ -226,6 +238,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     );
 
     const finalState = JSON.parse(await readFile(statePath, 'utf-8')) as {
+      active?: boolean;
+      completed_at?: string;
+      current_phase?: string;
       lifecycle_outcome?: string;
       question_enforcement?: {
         lifecycle_outcome?: string;
@@ -239,6 +254,9 @@ describe('runDeepInterviewQuestion', { concurrency: false }, () => {
     assert.equal(finalState.question_enforcement?.lifecycle_outcome, 'askuserQuestion');
     assert.equal(finalState.question_enforcement?.clear_reason, 'error');
     assert.ok(finalState.question_enforcement?.cleared_at);
+    assert.equal(finalState.active, true);
+    assert.equal(finalState.current_phase, 'intent-first');
+    assert.equal(finalState.completed_at, undefined);
     assert.equal(finalState.lifecycle_outcome, undefined);
     assert.equal(finalState.run_outcome, undefined);
   });

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const autopilotSkill = readFileSync(join(__dirname, '../../../skills/autopilot/SKILL.md'), 'utf-8');
+const deepInterviewSkill = readFileSync(join(__dirname, '../../../skills/deep-interview/SKILL.md'), 'utf-8');
 const ralplanSkill = readFileSync(join(__dirname, '../../../skills/ralplan/SKILL.md'), 'utf-8');
 const pipelineSkill = readFileSync(join(__dirname, '../../../skills/pipeline/SKILL.md'), 'utf-8');
 const skillsDocs = readFileSync(join(__dirname, '../../../docs/skills.html'), 'utf-8');
@@ -71,6 +72,15 @@ describe('autopilot skill default Ultragoal contract', () => {
     assert.match(autopilotSkill, /deliberately uses `milestone` rather than `phase`/i);
     assert.match(autopilotSkill, /New artifacts must write canonical snake_case keys/i);
     assert.match(autopilotSkill, /runtime may read legacy camelCase field\/marker aliases and direct\/nested `execution_contract` locations only as compatibility input/i);
+  });
+
+  it('requires deep-interview to persist a durable completion gate after writing artifacts', () => {
+    assert.match(deepInterviewSkill, /deep_interview_gate/i);
+    assert.match(deepInterviewSkill, /status.*complete/i);
+    assert.match(deepInterviewSkill, /lifecycle_outcome.*finished/i);
+    assert.match(deepInterviewSkill, /run_outcome.*finish/i);
+    assert.match(deepInterviewSkill, /current_phase.*complete/i);
+    assert.match(deepInterviewSkill, /omx state write --input '<json>' --json/i);
   });
 
   it('requires role-specific subsequent ralplan reviewer subagents with full context', () => {

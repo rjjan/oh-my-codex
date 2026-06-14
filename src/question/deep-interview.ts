@@ -207,6 +207,8 @@ export async function updateDeepInterviewQuestionEnforcement(
   if (!state) return null;
 
   const nextEnforcement = updater(state.question_enforcement);
+  const wasBlockedOnQuestion = safeString(state.lifecycle_outcome) === 'askuserQuestion'
+    || safeString(state.run_outcome) === 'blocked_on_user';
   const nextState: DeepInterviewStateRecord = {
     ...state,
     updated_at: new Date().toISOString(),
@@ -230,6 +232,10 @@ export async function updateDeepInterviewQuestionEnforcement(
   if (nextEnforcement?.status !== 'pending') {
     delete nextState.lifecycle_outcome;
     delete nextState.run_outcome;
+    if (wasBlockedOnQuestion) {
+      nextState.active = true;
+      delete nextState.completed_at;
+    }
   }
 
   await writeDeepInterviewState(cwd, nextState, sessionId);

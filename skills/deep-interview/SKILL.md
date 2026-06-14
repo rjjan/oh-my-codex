@@ -344,6 +344,15 @@ When threshold is met (or user exits with warning / hard cap):
 2. Write execution-ready spec to:
    - `.omx/specs/deep-interview-{slug}.md`
 
+3. After the transcript and spec files exist, persist a durable deep-interview
+   completion gate with `omx state write --input '<json>' --json`. The final
+   state must include `mode:"deep-interview"`, `active:false`,
+   `current_phase:"complete"`, `lifecycle_outcome:"finished"`,
+   `run_outcome:"finish"`, artifact paths, and a `deep_interview_gate` object
+   whose `status` is `complete` and whose rationale names why the requirements
+   are ready for handoff. Do not rely on a Codex rollout `task_complete` event
+   alone; downstream `$ralplan` requires this persisted completion gate.
+
 Spec should include:
 - Metadata (profile, rounds, final ambiguity, threshold, context type)
 - Context snapshot reference/path (for ralplan/team reuse)
@@ -529,6 +538,7 @@ Recommend `$ultragoal` as the default durable goal-mode follow-up because it sup
 - [ ] Challenge modes triggered at thresholds (when applicable)
 - [ ] Transcript written to `.omx/interviews/{slug}-{timestamp}.md`
 - [ ] Spec written to `.omx/specs/deep-interview-{slug}.md`
+- [ ] Durable terminal state written with `deep_interview_gate.status:"complete"`
 - [ ] Brownfield questions use evidence-backed confirmation when applicable
 - [ ] Brownfield preflight inspected applicable repo docs/rules/context before user-facing questions
 - [ ] Fuzzy or conflicting terminology was challenged against repo language/current code behavior when applicable
